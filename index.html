@@ -668,19 +668,40 @@
             <ellipse cx="60" cy="380" rx="6" ry="5" fill="white" opacity="0.3"/>
           </g>
 
-          <!-- Tick marks -->
+          <!-- Tick marks: every R 0.5M.
+               Majors (R 0 / R 1.0M / R 2.0M / R 3.0M / R 3.5M) are full-length
+               with the primary label; intermediates are shorter, lighter,
+               and labeled in a subordinate style for visual hierarchy. -->
+
+          <!-- R 3.5M (major / goal) -->
           <line x1="86" y1="46"  x2="97" y2="46"  stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
           <text x="100" y="50"  font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="8.5" fill="#1568b5" font-weight="700">R 3.5M</text>
 
-          <line x1="86" y1="92" x2="97" y2="92" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
-          <text x="100" y="96" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="8.5" fill="#1568b5" font-weight="700">R 3.0M</text>
+          <!-- R 3.0M (major) -->
+          <line x1="86" y1="92"  x2="97" y2="92"  stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
+          <text x="100" y="96"  font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="8.5" fill="#1568b5" font-weight="700">R 3.0M</text>
 
+          <!-- R 2.5M (minor) -->
+          <line x1="86" y1="138" x2="93" y2="138" stroke="#7fc1ee" stroke-width="1.2" stroke-linecap="round"/>
+          <text x="96" y="141" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="7" fill="#5b9bd5" font-weight="600">R 2.5M</text>
+
+          <!-- R 2.0M (major) -->
           <line x1="86" y1="184" x2="97" y2="184" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
           <text x="100" y="188" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="8.5" fill="#1568b5" font-weight="700">R 2.0M</text>
 
+          <!-- R 1.5M (minor) -->
+          <line x1="86" y1="230" x2="93" y2="230" stroke="#7fc1ee" stroke-width="1.2" stroke-linecap="round"/>
+          <text x="96" y="233" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="7" fill="#5b9bd5" font-weight="600">R 1.5M</text>
+
+          <!-- R 1.0M (major) -->
           <line x1="86" y1="276" x2="97" y2="276" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
           <text x="100" y="280" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="8.5" fill="#1568b5" font-weight="700">R 1.0M</text>
 
+          <!-- R 0.5M (minor) -->
+          <line x1="86" y1="322" x2="93" y2="322" stroke="#7fc1ee" stroke-width="1.2" stroke-linecap="round"/>
+          <text x="96" y="325" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="7" fill="#5b9bd5" font-weight="600">R 0.5M</text>
+
+          <!-- R 0 (major) -->
           <line x1="86" y1="368" x2="97" y2="368" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
           <text x="100" y="372" font-family="Plus Jakarta Sans, Montserrat, sans-serif" font-size="8.5" fill="#1568b5" font-weight="700">R 0</text>
         </svg>
