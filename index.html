@@ -555,7 +555,7 @@
       <div class="raised-hero">
         <div class="raised-eyebrow">Total raised</div>
         <div class="raised-amount" id="raisedDisplay">R0</div>
-        <div class="raised-of">of <strong>R3,500,000</strong> community goal</div>
+        <div class="raised-of">of <strong>R 3,500,000</strong> community goal</div>
       </div>
 
       <!-- Progress bar -->
@@ -581,11 +581,11 @@
       <div class="stat-grid">
         <div class="stat-box">
           <div class="sb-label">Community Goal</div>
-          <div class="sb-value">R3,500,000</div>
+          <div class="sb-value">R 3,500,000</div>
         </div>
         <div class="stat-box">
           <div class="sb-label">Still needed</div>
-          <div class="sb-value blue" id="remainingDisplay">R3,500,000</div>
+          <div class="sb-value blue" id="remainingDisplay">R 3,500,000</div>
         </div>
       </div>
 
@@ -629,9 +629,9 @@
   const TOTAL_LABEL = 'Donations';
   // ═══════════════════════════════════════════════
 
-  // South African number format
+  // Currency format: "R 3,500,000" \u2014 space after R, commas as thousand separators
   const fmt = n =>
-    'R\u202F' + Math.round(n).toLocaleString('en-ZA', { maximumFractionDigits: 0 });
+    'R\u00A0' + Math.round(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
 
   // Animated counting number
   let _current = 0, _raf = null;
