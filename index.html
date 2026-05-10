@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Donation Drive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      min-height: 100vh;
+      background: #0a1929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Decorative background glows */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -15%;
+      right: -12%;
+      width: 55vw;
+      height: 55vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46,163,242,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      left: -12%;
+      width: 50vw;
+      height: 50vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(230,57,70,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #ffffff;
+      border-radius: 28px;
+      box-shadow: 0 32px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+      max-width: 700px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .card-header {
+      background: linear-gradient(135deg, #2ea3f2 0%, #1568b5 100%);
+      padding: 26px 36px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .logo {
+      height: 42px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
+      color: #fff;
+      line-height: 1.15;
+    }
+
+    .header-sub {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: 3px;
+      font-weight: 400;
+    }
+
+    /* ── Two-column body ── */
+    .card-body {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+    }
+
+    /* ── Left: thermometer ── */
+    .thermo-col {
+      background: #f5f9fd;
+      border-right: 1px solid #e5eef6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 12px 28px;
+      gap: 10px;
+    }
+
+    .thermo-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #2ea3f2;
+      background: rgba(46,163,242,0.1);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* SVG fill — animated via CSS transform */
+    #svgFillRect {
+      transform-box: fill-box;
+      transform-origin: bottom center;
+      transform: scaleY(0);
+      transition: transform 1.9s cubic-bezier(0.22, 1.2, 0.36, 1);
+    }
+
+    /* Bulb glow pulse */
+    @keyframes bulb-glow {
+      0%, 100% { filter: drop-shadow(0 0 5px rgba(220,38,38,0.55)); }
+      50%       { filter: drop-shadow(0 0 18px rgba(220,38,38,0.9)); }
+    }
+    .bulb-grp { animation: bulb-glow 2.4s ease-in-out infinite; }
+
+    /* ── Right: stats ── */
+    .stats-col {
+      padding: 32px 36px 30px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Hero raised amount */
+    .raised-hero {}
+
+    .raised-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #aab8c6;
+      margin-bottom: 5px;
+    }
+
+    .raised-amount {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 2.6rem;
+      color: #dc2626;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .raised-of {
+      font-size: 0.88rem;
+      color: #9aacba;
+      margin-top: 5px;
+    }
+    .raised-of strong { color: #4a6070; font-weight: 700; }
+
+    /* Progress bar */
+    .progress-section { display: flex; flex-direction: column; gap: 9px; }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .progress-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #8aa0b0;
+    }
+
+    .pct-pill {
+      background: linear-gradient(135deg, #ff6b35, #dc2626);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.78rem;
+      padding: 4px 13px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(220,38,38,0.35);
+    }
+
+    .bar-track {
+      height: 16px;
+      background: #e8f0f8;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.07);
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b35 0%, #dc2626 100%);
+      border-radius: 8px;
+      width: 0%;
+      transition: width 1.9s cubic-bezier(0.22, 1.2, 0.36, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Shimmer on bar */
+    .bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: -80%;
+      width: 60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+      animation: shimmer 2.2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      to { left: 150%; }
+    }
+
+    /* Milestone badges */
+    .milestones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .ms {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 6px;
+      border: 1.5px solid #dde8f2;
+      color: #bfcdd8;
+      transition: all 0.5s ease;
+      cursor: default;
+    }
+
+    .ms.reached {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+      box-shadow: 0 2px 8px rgba(245,158,11,0.2);
+    }
+
+    /* Stat boxes */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-box {
+      background: #f5f9fd;
+      border: 1.5px solid #e3edf6;
+      border-radius: 14px;
+      padding: 14px 18px;
+    }
+
+    .sb-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #9ab0c0;
+      margin-bottom: 5px;
+    }
+
+    .sb-value {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #2d4050;
+    }
+    .sb-value.blue { color: #2ea3f2; }
+
+    /* Goal banner */
+    .goal-banner {
+      display: none;
+      background: linear-gradient(135deg, #2ea3f2, #1568b5);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-align: center;
+      padding: 14px;
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(46,163,242,0.4);
+    }
+
+    /* CTA button */
+    .cta-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #2ea3f2 0%, #1568b5 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 15px 24px;
+      border-radius: 14px;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      box-shadow: 0 6px 20px rgba(46,163,242,0.38);
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .cta-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(46,163,242,0.5);
+    }
+
+    /* Status row */
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .s-dot {
+      width: 7px; height: 7px;
+      background: #2ea3f2;
+      border-radius: 50%;
+      animation: pdot 2.2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pdot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.4; transform:scale(0.65); }
+    }
+    .s-text {
+      font-size: 0.72rem;
+      color: #aab8c6;
+    }
+    .s-text.err { color: #dc2626; }
+    .s-text.ok  { color: #2ea3f2; }
+
+    /* ── WhatsApp Download Button ── */
+    .wa-download-wrap {
+      max-width: 700px;
+      width: 100%;
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .wa-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      padding: 14px 28px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(37,211,102,0.40);
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .wa-btn:hover {
+      opacity: 0.92;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(37,211,102,0.55);
+    }
+    .wa-btn:active { transform: translateY(0); }
+    .wa-btn svg { flex-shrink: 0; }
+
+    .wa-btn.loading {
+      opacity: 0.75;
+      pointer-events: none;
+    }
+    .wa-btn .btn-label { transition: opacity 0.2s; }
+
+    /* ── Print / Save-as-PDF fallback ── */
+    @media print {
+      @page { size: 297mm 210mm; margin: 0; }
+      body {
+        background: #ffffff !important;
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+      }
+      body::before, body::after { display: none !important; }
+      .wa-download-wrap { display: none !important; }
+      .card {
+        max-width: 100% !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+      }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 560px) {
+      .card-body { grid-template-columns: 1fr; }
+      .thermo-col {
+        border-right: none;
+        border-bottom: 1px solid #e5eef6;
+        padding: 24px 20px;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      .thermo-tag { display: none; }
+      .stats-col { padding: 24px 22px; }
+      .raised-amount { font-size: 2rem; }
+      .card-header { padding: 22px 24px; }
+      .header-title { font-size: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <img class="logo" src="https://apps.co.za/wp-content/uploads/2024/10/apps.png" alt="School Logo" />
+    <div>
+      <div class="header-title">The APPS Aquatic Legacy</div>
+      <div class="header-sub">Help us reach our R3.0m goal to complete the R4.5m modernization of the APPS pool. Your investment ensures a 20-year legacy of hygiene, safety, and elite training for every APPS girl.</div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+
+    <!-- ── Thermometer ── -->
+    <div class="thermo-col">
+      <div class="thermo-tag">Goal: R3.0M</div>
+
+      <svg viewBox="0 0 160 430" width="160" height="430" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Clip: tube + bulb union -->
+          <clipPath id="thermoClip">
+            <rect x="52" y="38" width="34" height="335" rx="17"/>
+            <circle cx="69" cy="388" r="30"/>
+          </clipPath>
+
+          <!-- Fill gradient: warm orange → deep red, bottom-to-top -->
+          <linearGradient id="fillGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%"   stop-color="#991b1b"/>
+            <stop offset="40%"  stop-color="#dc2626"/>
+            <stop offset="100%" stop-color="#ff6b35"/>
+          </linearGradient>
+
+          <!-- Tube glass sheen -->
+          <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stop-color="white" stop-opacity="0.22"/>
+            <stop offset="35%"  stop-color="white" stop-opacity="0.06"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </linearGradient>
+
+          <!-- Tube background -->
+          <linearGradient id="tubeBg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stop-color="#dae8f5"/>
+            <stop offset="100%" stop-color="#eef5fb"/>
+          </linearGradient>
+
+          <!-- Bulb glow filter -->
+          <radialGradient id="bulbGrad" cx="36%" cy="34%" r="65%">
+            <stop offset="0%"   stop-color="#ff8a65"/>
+            <stop offset="65%"  stop-color="#dc2626"/>
+            <stop offset="100%" stop-color="#7f1d1d"/>
+          </radialGradient>
+
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Tube background shell -->
+        <rect x="52" y="38" width="34" height="335" rx="17"
+              fill="url(#tubeBg)" stroke="#c2d8ec" stroke-width="2"/>
+
+        <!-- Bulb background shell -->
+        <circle cx="69" cy="388" r="30"
+                fill="url(#tubeBg)" stroke="#c2d8ec" stroke-width="2"/>
+
+        <!-- Fill (rises from bottom, clipped to shape) -->
+        <g clip-path="url(#thermoClip)">
+          <rect id="svgFillRect"
+                x="42" y="38" width="54" height="380"
+                fill="url(#fillGrad)"/>
+        </g>
+
+        <!-- Glass sheen overlay -->
+        <rect x="52" y="38" width="34" height="335" rx="17"
+              fill="url(#sheen)" pointer-events="none"/>
+
+        <!-- Glass highlight stripe -->
+        <rect x="57" y="50" width="9" height="310" rx="4.5"
+              fill="white" opacity="0.19" pointer-events="none"/>
+
+        <!-- Tube border (crisp edge on top of everything) -->
+        <rect x="52" y="38" width="34" height="335" rx="17"
+              fill="none" stroke="#9dc4de" stroke-width="1.5"/>
+
+        <!-- Bulb with glow -->
+        <g class="bulb-grp">
+          <circle cx="69" cy="388" r="28" fill="url(#bulbGrad)"/>
+          <circle cx="69" cy="388" r="28" fill="none" stroke="#9dc4de" stroke-width="1.5"/>
+          <!-- Specular highlight -->
+          <ellipse cx="60" cy="380" rx="6" ry="5"
+                   fill="white" opacity="0.3"/>
+        </g>
+
+        <!-- Tick marks (right of tube; tube right edge = x=86) -->
+        <!-- R4.5M  y=46 -->
+        <line x1="86" y1="46"  x2="97" y2="46"  stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="100" y="50"  font-family="Montserrat,sans-serif" font-size="8.5" fill="#2ea3f2" font-weight="700">R3.0M</text>
+
+        <!-- R2.25M -->
+        <line x1="86" y1="113" x2="97" y2="113" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="100" y="117" font-family="Montserrat,sans-serif" font-size="8.5" fill="#2ea3f2" font-weight="700">R2.25M</text>
+
+        <!-- R1.5M -->
+        <line x1="86" y1="179" x2="97" y2="179" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="100" y="183" font-family="Montserrat,sans-serif" font-size="8.5" fill="#2ea3f2" font-weight="700">R1.5M</text>
+
+        <!-- R750K -->
+        <line x1="86" y1="246" x2="97" y2="246" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="100" y="250" font-family="Montserrat,sans-serif" font-size="8.5" fill="#2ea3f2" font-weight="700">R750K</text>
+
+        <!-- R0 -->
+        <line x1="86" y1="368" x2="97" y2="368" stroke="#2ea3f2" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="100" y="372" font-family="Montserrat,sans-serif" font-size="8.5" fill="#2ea3f2" font-weight="700">R0</text>
+      </svg>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-col">
+
+      <!-- Hero: raised amount -->
+      <div class="raised-hero">
+        <div class="raised-eyebrow">Total raised</div>
+        <div class="raised-amount" id="raisedDisplay">R0</div>
+        <div class="raised-of">of <strong>R3,000,000</strong> community goal</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Progress</span>
+          <span class="pct-pill" id="percentDisplay">0%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="barFill"></div>
+        </div>
+      </div>
+
+      <!-- Milestone badges -->
+      <div class="milestones">
+        <div class="ms" data-t="750000">R750K</div>
+        <div class="ms" data-t="1500000">R1.5M</div>
+        <div class="ms" data-t="2250000">R2.25M</div>
+        <div class="ms" data-t="3000000">R3.0M ✓</div>
+      </div>
+
+      <!-- Stat grid -->
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="sb-label">Community Goal</div>
+          <div class="sb-value">R3,000,000</div>
+        </div>
+        <div class="stat-box">
+          <div class="sb-label">Still needed</div>
+          <div class="sb-value blue" id="remainingDisplay">R4,500,000</div>
+        </div>
+      </div>
+
+      <!-- Goal banner -->
+      <div class="goal-banner" id="goalBanner">
+        Goal Reached! Thank you to all our incredible donors!
+      </div>
+
+      <!-- Live indicator -->
+      <div class="status-row">
+        <div class="s-dot"></div>
+        <span class="s-text" id="statusMsg">Auto-refreshes every 5 minutes</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- WhatsApp Download -->
+<div class="wa-download-wrap">
+  <button class="wa-btn" id="waBtn" onclick="downloadForWhatsApp()">
+    <!-- WhatsApp icon -->
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+    <span class="btn-label">Download for WhatsApp</span>
+  </button>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════
+  //  CONFIGURATION — edit these values
+  // ═══════════════════════════════════════════════
+  const GOAL = 3000000;
+
+  // Paste your published Google Sheet CSV URL here.
+  // How to get it:
+  //   1. Open your Google Sheet
+  //   2. File → Share → Publish to web
+  //   3. Choose the sheet tab → "Comma-separated values (.csv)"
+  //   4. Click Publish → copy the URL → paste below
+  const SHEET_CSV_URL = 'YOUR_PUBLISHED_CSV_URL_HERE';
+
+  const AMOUNT_COLUMN = 1;  // 0 = col A, 1 = col B, etc.
+  const HEADER_ROWS   = 1;  // rows to skip at top
+  // ═══════════════════════════════════════════════
+
+  // South African number format
+  const fmt = n =>
+    'R\u202F' + Math.round(n).toLocaleString('en-ZA', { maximumFractionDigits: 0 });
+
+  // Animated counting number
+  let _current = 0, _raf = null;
+  function animateCount(target) {
+    if (_raf) cancelAnimationFrame(_raf);
+    const from = _current, dur = 1800, t0 = performance.now();
+    function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      document.getElementById('raisedDisplay').textContent = fmt(from + (target - from) * eased);
+      if (p < 1) { _raf = requestAnimationFrame(tick); } else { _current = target; }
+    }
+    _raf = requestAnimationFrame(tick);
+  }
+
+  function updateUI(raised) {
+    const pct = Math.min((raised / GOAL) * 100, 100);
+    animateCount(raised);
+    document.getElementById('remainingDisplay').textContent = fmt(Math.max(GOAL - raised, 0));
+    document.getElementById('percentDisplay').textContent   = pct.toFixed(1) + '%';
+
+    // SVG fill + bar (short delay so CSS transition fires)
+    setTimeout(() => {
+      const fr = document.getElementById('svgFillRect');
+      if (fr) fr.style.transform = `scaleY(${pct / 100})`;
+      document.getElementById('barFill').style.width = pct + '%';
+    }, 180);
+
+    // Milestones
+    document.querySelectorAll('.ms').forEach(el => {
+      el.classList.toggle('reached', raised >= +el.dataset.t);
+    });
+
+    if (raised >= GOAL) document.getElementById('goalBanner').style.display = 'block';
+  }
+
+  async function fetchTotal() {
+    const st = document.getElementById('statusMsg');
+
+    if (!SHEET_CSV_URL || SHEET_CSV_URL === 'YOUR_PUBLISHED_CSV_URL_HERE') {
+      st.textContent = 'Demo mode — configure SHEET_CSV_URL for live data';
+      updateUI(1350000); // demo value
+      return;
+    }
+
+    try {
+      st.className = 's-text';
+      st.textContent = 'Fetching latest data…';
+
+      const res  = await fetch(SHEET_CSV_URL + '&cb=' + Date.now());
+      const text = await res.text();
+      const rows = text.trim().split('\n').slice(HEADER_ROWS);
+
+      let total = 0;
+      for (const row of rows) {
+        const val = parseFloat((row.split(',')[AMOUNT_COLUMN] || '').replace(/[^0-9.]/g, ''));
+        if (!isNaN(val)) total += val;
+      }
+
+      updateUI(total);
+      const t = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+      st.textContent = `Updated ${t} · refreshes every 5 min`;
+      st.className = 's-text ok';
+    } catch (e) {
+      console.error(e);
+      st.textContent = 'Could not load data — check CSV URL';
+      st.className = 's-text err';
+    }
+  }
+
+  fetchTotal();
+  setInterval(fetchTotal, 5 * 60 * 1000);
+
+  // ── WhatsApp PDF Download ──────────────────────────
+  // 1px transparent GIF — replaces the logo in the html2canvas clone
+  //   so the external image never taints the canvas
+  const BLANK_GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+  function printFallback() {
+    window.print();
+  }
+
+  async function downloadForWhatsApp() {
+    const btn   = document.getElementById('waBtn');
+    const label = btn.querySelector('.btn-label');
+    btn.classList.add('loading');
+    label.textContent = 'Preparing…';
+
+    // ── Guard: make sure libraries loaded ──
+    if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+      btn.classList.remove('loading');
+      label.textContent = 'Download for WhatsApp';
+      const ok = confirm(
+        'PDF libraries could not load (no internet connection?).\n\n' +
+        'Click OK to open the Print dialog instead — then choose\n' +
+        '"Save as PDF" as the destination.'
+      );
+      if (ok) printFallback();
+      return;
+    }
+
+    try {
+      const card = document.querySelector('.card');
+
+      const canvas = await html2canvas(card, {
+        scale          : 2,
+        useCORS        : true,
+        allowTaint     : false,
+        backgroundColor: '#ffffff',
+        logging        : false,
+        // onclone: swap the external logo for a blank so the canvas
+        //          is never cross-origin tainted → toDataURL() works
+        onclone: (clonedDoc) => {
+          const logo = clonedDoc.querySelector('.logo');
+          if (logo) {
+            logo.src = BLANK_GIF;
+            logo.style.opacity = '0'; // keep layout, hide blank pixel
+          }
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.96);
+
+      // Convert canvas px → mm (96 dpi baseline; divide by scale for CSS px)
+      const PX_TO_MM = 25.4 / 96;
+      const pageW = (canvas.width  / 2) * PX_TO_MM;
+      const pageH = (canvas.height / 2) * PX_TO_MM;
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: pageH >= pageW ? 'portrait' : 'landscape',
+        unit       : 'mm',
+        format     : [pageW, pageH],
+        compress   : true
+      });
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH, undefined, 'FAST');
+      pdf.save('APPS-Aquatic-Legacy.pdf');
+
+    } catch (err) {
+      console.error('PDF export error:', err);
+      const ok = confirm(
+        'Could not generate PDF automatically.\n\n' +
+        'Click OK to open the Print dialog — choose\n' +
+        '"Save as PDF" as the destination to get the same result.'
+      );
+      if (ok) printFallback();
+    } finally {
+      btn.classList.remove('loading');
+      label.textContent = 'Download for WhatsApp';
+    }
+  }
+</script>
+</body>
+</html>
