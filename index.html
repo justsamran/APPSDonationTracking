@@ -832,14 +832,22 @@
       const text = await res.text();
       const rows = text.trim().split(/\r?\n/);
 
+      // Find the "Donations" row and read its value.
+      // Note: Google Sheets exports formatted currency like "R500,000.00"
+      // (quoted because of the thousand-separator comma). A naive
+      // row.split(',') would break that value across multiple cells, so
+      // we instead grab everything after the FIRST comma as the raw value
+      // and strip anything that isn't a digit or decimal point.
       let total = null;
       const want = TOTAL_LABEL.trim().toLowerCase();
       for (const row of rows) {
-        const cols = row.split(',');
-        if ((cols[0] || '').trim().toLowerCase() === want) {
-          total = parseFloat((cols[1] || '').replace(/[^0-9.]/g, ''));
-          break;
-        }
+        const firstComma = row.indexOf(',');
+        if (firstComma < 0) continue;
+        const label = row.slice(0, firstComma).trim().toLowerCase();
+        if (label !== want) continue;
+        const rawValue = row.slice(firstComma + 1);
+        total = parseFloat(rawValue.replace(/[^0-9.]/g, ''));
+        break;
       }
 
       if (total === null || isNaN(total)) {
